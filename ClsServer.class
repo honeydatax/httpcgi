@@ -1,0 +1,66 @@
+' Gambas class file
+
+
+Public Clients As Object[]
+Public Srv As ServerSocket
+Public paths As String = "/home/pi/cgi"
+Public Tport As Integer = 8080
+Public Sub Socket_Read()
+  Dim ee As Integer
+  Dim vv As String
+  Dim v As String
+  Dim f1 As File
+  Dim f2 As File
+  Dim i As Integer
+  Dim scad As String
+  ee = 0
+  Read #Last, scad, Lof(Last)
+  i = InStr(scad, "GET /")
+  If i < 1 Then Error.Raise("error")
+  i = InStr(scad, "HTTP/1.")
+  If i < 1 Then Error.Raise("error")
+  scad = Replace(scad, "GET ", "") 
+  scad = Replace(scad, "HTTP/1.", "")
+  i = InStr(scad, "/")
+  If i < 1 Then
+      Error.Raise("error")
+    Else
+      scad = Mid(scad, i)
+  Endif
+  i = InStr(scad, " ")
+  If i < 1 Then
+      Error.Raise("error")
+    Else
+      scad = Mid(scad, 1, i - 1)
+  Endif
+  v = ""
+Print Date(); " "; Time(); " "; scad
+  ee = 1  
+  Shell paths & scad To v
+  ee = 0
+   Write #Last, v, Len(v)
+  Close #Last
+  Finally 
+    If ee = 1 Then
+      Close Last
+    End If
+  Catch 
+    'Write #Last, "error\r\n", 9
+End
+Public Sub Socket_closed()
+  Print "closed..."
+  Clients.Remove(Clients.Find(Last))  
+End
+Public Sub Srv_Connection(Host As String)
+  Dim mysock As Socket
+  Print Host; ">>>"
+  mysock = Srv.Accept()
+  Clients.Add(mysock)     
+End
+Public Sub _New()
+  Clients = New Object[]
+  Srv = New ServerSocket As "Srv"
+  Srv.Port = Tport
+  Srv.Type = Net.Internet
+  Srv.Listen()
+End

@@ -1,0 +1,10 @@
+' Gambas module file
+
+
+Public Sub Main()
+Dim a As Integer
+ Dim Server As ClsServer
+  Server = New ClsServer
+ ' Do While a <> 1
+  'Loop
+End
